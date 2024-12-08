@@ -1,7 +1,6 @@
 <script setup>
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/auth'
-import Sidebar from '@/components/Sidebar.vue'
 
 const authStore = useAuthStore()
 
@@ -12,7 +11,6 @@ const handleLogout = async () => {
 
 <template>
   <div class="flex">
-    <Sidebar />
     <div class="flex-1">
       <div class="container p-4">
         <header class="flex justify-between items-center mb-8">

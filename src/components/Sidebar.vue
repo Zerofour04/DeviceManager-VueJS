@@ -17,37 +17,42 @@ const menuItems = [
 </script>
 
 <template>
-  <div class="h-screen w-64 bg-white border-r">
-    <div class="p-4">
-      <div class="mb-8">
-        <img 
-          :src="FaureciaLogo" 
-          alt="Faurecia Logo" 
-          class="w-48"
-        />
+  <div class="h-full flex flex-col bg-white">
+    <!-- Logo Section -->
+    <div class="p-4 border-b">
+      <img 
+        :src="FaureciaLogo" 
+        alt="Faurecia Logo" 
+        class="w-48"
+      />
+      <div class="mt-4">
+        <h1 class="text-xl font-bold">Faurecia</h1>
+        <p class="text-sm text-gray-500">In development by Ben</p>
       </div>
-      <nav>
-        <ul class="space-y-2">
-          <li v-for="item in menuItems" :key="item.label">
-            <a 
-              v-if="item.path"
-              :href="item.path"
-              class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100"
-            >
-              <component :is="item.icon" class="w-5 h-5" />
-              {{ item.label }}
-            </a>
-            <button 
-              v-else
-              @click="item.action"
-              class="flex items-center gap-3 p-2 w-full rounded-lg hover:bg-red-100 text-red-600"
-            >
-              <component :is="item.icon" class="w-5 h-5" />
-              {{ item.label }}
-            </button>
-          </li>
-        </ul>
-      </nav>
     </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 p-4">
+      <ul class="space-y-2">
+        <li v-for="item in menuItems" :key="item.label">
+          <router-link 
+            v-if="item.path"
+            :to="item.path"
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100"
+          >
+            <component :is="item.icon" class="w-5 h-5" />
+            {{ item.label }}
+          </router-link>
+          <button 
+            v-else
+            @click="item.action"
+            class="flex items-center gap-3 p-2 w-full rounded-lg hover:bg-red-100 text-red-600"
+          >
+            <component :is="item.icon" class="w-5 h-5" />
+            {{ item.label }}
+          </button>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
