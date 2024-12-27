@@ -2,12 +2,12 @@
 import { ref, computed, onMounted } from 'vue';
 import { useDeviceStore } from '@/stores/devices';
 import { supabase } from '@/lib/supabase';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,16 +20,24 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const deviceStore = useDeviceStore();
-const searchQuery = ref('');
+
+import AddDevice from './devices/AddDevice.vue'
+
+
+//Dialog
 const isDialogOpen = ref(false);
 const selectedDeviceDetails = ref(null);
-const isEditDialogOpen = ref(false);
-const editingDevice = ref(null);
 
 onMounted(() => {
     deviceStore.fetchDevices();
 });
 
+//Edit Dialog
+const isEditDialogOpen = ref(false);
+const editingDevice = ref(null);
+
+// Searching
+const searchQuery = ref('');
 const filteredDevices = computed(() => {
     if (!searchQuery.value) return deviceStore.devices;
 
@@ -68,6 +76,7 @@ const handleSave = async () => {
     }
 };
 
+// Delete Dialog
 const isDeleteDialogOpen = ref(false);
 const deviceToDelete = ref(null);
 
@@ -86,6 +95,45 @@ const handleDelete = async () => {
             isDeleteDialogOpen.value = false;
             deviceToDelete.value = null;
         }
+    }
+};
+
+// New Device
+
+const isNewDeviceDialogOpen = ref(false);
+const newDevice = ref({
+    device_name: '',
+    ou: '',
+    display_name: '',
+    model: '',
+    serial_number: '',
+    os_version: '',
+    is_device_compliant: false,
+    is_supported: false,
+    is_depregistered: false,
+    is_version_compliant_18_0: false,
+    is_ipad_shopfloor: false
+});
+
+const handleCreateDevice = async () => {
+    const { error } = await supabase.from('DeviceDatabase').insert(newDevice.value);
+
+    if (!error) {
+        await deviceStore.fetchDevices();
+        isNewDeviceDialogOpen.value = false;
+        newDevice.value = {
+            device_name: '',
+            ou: '',
+            display_name: '',
+            model: '',
+            serial_number: '',
+            os_version: '',
+            is_device_compliant: false,
+            is_supported: false,
+            is_depregistered: false,
+            is_version_compliant_18_0: false,
+            is_ipad_shopfloor: false
+        };
     }
 };
 
@@ -186,11 +234,81 @@ const columns = [
         <div class="flex-1 space-y-4 p-8 pt-6">
             <div class="flex items-center justify-between space-y-2">
                 <h2 class="text-3xl font-bold tracking-tight">Devices</h2>
+                <div class="space-x-2">
+                    <Button @click="isNewDeviceDialogOpen = true"> New Device </Button>
+                </div>
             </div>
 
             <div class="flex items-center space-x-2">
                 <Input placeholder="Search devices..." v-model="searchQuery" class="max-w-sm" />
             </div>
+            <!-- New Device Dialog -->
+            <Dialog v-model:open="isNewDeviceDialogOpen">
+                <DialogContent class="sm:max-w-[700px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New Device</DialogTitle>
+                        <DialogDescription> Enter the details for the new device </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="grid gap-4 py-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">Device Name</label>
+                                <Input v-model="newDevice.device_name" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">Organization Unit</label>
+                                <Input v-model="newDevice.ou" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">Display Name</label>
+                                <Input v-model="newDevice.display_name" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">Model</label>
+                                <Input v-model="newDevice.model" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">Serial Number</label>
+                                <Input v-model="newDevice.serial_number" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm text-muted-foreground">OS Version</label>
+                                <Input v-model="newDevice.os_version" />
+                            </div>
+                        </div>
+
+                        <!-- Device Status -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div
+                                v-for="key in [
+                                    'is_device_compliant',
+                                    'is_supported',
+                                    'is_depregistered',
+                                    'is_version_compliant_18_0',
+                                    'is_ipad_shopfloor'
+                                ]"
+                                :key="key"
+                                class="space-y-2">
+                                <label class="text-sm text-muted-foreground">
+                                    {{ columns.find((col) => col.accessorKey === key)?.header }}
+                                </label>
+                                <select
+                                    v-model="newDevice[key]"
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2">
+                                    <option :value="true">Yes</option>
+                                    <option :value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 mt-4">
+                        <Button variant="outline" @click="isNewDeviceDialogOpen = false"> Cancel </Button>
+                        <Button @click="handleCreateDevice"> Create Device </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <!-- Details Dialog -->
             <Dialog v-model:open="isDialogOpen">
